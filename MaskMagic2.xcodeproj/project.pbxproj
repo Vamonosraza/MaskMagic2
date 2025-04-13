@@ -395,8 +395,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4ZU79YBQJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "MaskMagic2 needs access to your camera to take photos for image editing.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MaskMagic2 needs access to save generated images to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MaskMagic2 needs access to your photo library to select photos for editing.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -422,8 +426,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4ZU79YBQJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "MaskMagic2 needs access to your camera to take photos for image editing.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MaskMagic2 needs access to save generated images to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MaskMagic2 needs access to your photo library to select photos for editing.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
