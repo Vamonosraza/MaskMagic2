@@ -1,0 +1,11 @@
+/DerivedData/
+/build/
+*.xcworkspace
+*.xcuserdata
+*.swp
+*.tmp
+Pods/
+.env
+*.dSYM
+Configuration.swift
+

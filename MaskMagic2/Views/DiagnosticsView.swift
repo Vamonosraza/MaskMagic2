@@ -113,7 +113,7 @@ struct DiagnosticsView: View {
         // Create a simple request to test the API connection
         let url = URL(string: "https://api.openai.com/v1/models")!
         var request = URLRequest(url: url)
-        request.addValue("Bearer \(Configuration.openAIAPIKey)", forHTTPHeaderField: "Authorization")
+        Text("API Key: [Securely stored in Firebase]")
         
         logMessages.append("📱 Sending request to \(url)...")
         

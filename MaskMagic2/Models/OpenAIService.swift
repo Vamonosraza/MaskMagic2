@@ -10,7 +10,7 @@ import UIKit
 import Combine
 
 class OpenAIService {
-    private let apiKey = Configuration.openAIAPIKey
+    // Removed API key reference since we're using Firebase Function now
     
     func generateImage(originalImage: UIImage, mask: UIImage, prompt: String) -> AnyPublisher<UIImage, Error> {
         print("📱 OpenAIService: Starting image generation with prompt: \(prompt)")
@@ -28,22 +28,22 @@ class OpenAIService {
                 .eraseToAnyPublisher()
         }
 
-        // Prepare the image data
-        guard let imageData = uprightImage.pngData() else {
+        // Convert images to base64 format for JSON request
+        guard let imageBase64 = uprightImage.pngData()?.base64EncodedString() else {
             print("⚠️ OpenAIService: Failed to convert image to PNG data")
             return Fail(error: NSError(domain: "OpenAIService", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to PNG format"]))
                 .eraseToAnyPublisher()
         }
 
-        guard let maskData = mask.pngData() else {
+        guard let maskBase64 = mask.pngData()?.base64EncodedString() else {
             print("⚠️ OpenAIService: Failed to convert mask to PNG data")
             return Fail(error: NSError(domain: "OpenAIService", code: 1004, userInfo: [NSLocalizedDescriptionKey: "Failed to convert mask to PNG format"]))
                 .eraseToAnyPublisher()
         }
 
-        // Check file sizes
-        let imageSizeMB = Double(imageData.count) / (1024 * 1024)
-        let maskSizeMB = Double(maskData.count) / (1024 * 1024)
+        // Check file sizes (still important for Firebase Function)
+        let imageSizeMB = Double(imageBase64.count) * 0.75 / (1024 * 1024)  // Base64 is about 4/3 of the original size
+        let maskSizeMB = Double(maskBase64.count) * 0.75 / (1024 * 1024)
 
         print("📱 OpenAIService: Image file size: \(imageSizeMB) MB")
         print("📱 OpenAIService: Mask file size: \(maskSizeMB) MB")
@@ -60,27 +60,34 @@ class OpenAIService {
                 .eraseToAnyPublisher()
         }
 
-        let url = URL(string: Configuration.openAIEndpoint)!
+        // Use Firebase Function endpoint instead of OpenAI directly
+        let url = URL(string: Configuration.imageGenerationEndpoint)!
         print("📱 OpenAIService: Making request to \(url)")
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-
-        let boundary = UUID().uuidString
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
-        // Create multipart form data with already-checked data
-        print("📱 OpenAIService: Creating multipart form data with boundary \(boundary)")
-        let httpBody = createMultipartFormData(
-            boundary: boundary,
-            imageData: imageData,
-            maskData: maskData,
-            prompt: prompt
-        )
-
-        print("📱 OpenAIService: Form data size: \(httpBody.count) bytes")
-        request.httpBody = httpBody
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 300
+        
+        // Create JSON request body for Firebase Function
+        let requestBody: [String: Any] = [
+            "image": "data:image/png;base64," + imageBase64,
+            "mask": "data:image/png;base64," + maskBase64,
+            "prompt": prompt,
+            "model": "dall-e-2",
+            "size": "1024x1024",
+            "response_format": "url"
+        ]
+        
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: requestBody)
+            print("📱 OpenAIService: JSON data size: \(jsonData.count) bytes")
+            request.httpBody = jsonData
+        } catch {
+            print("⚠️ OpenAIService: Failed to create JSON data: \(error)")
+            return Fail(error: NSError(domain: "OpenAIService", code: 1009, userInfo: [NSLocalizedDescriptionKey: "Failed to create JSON data: \(error.localizedDescription)"]))
+                .eraseToAnyPublisher()
+        }
 
         return URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { data, response -> Data in
@@ -154,52 +161,7 @@ class OpenAIService {
             .eraseToAnyPublisher()
     }
     
-    private func createMultipartFormData(boundary: String, imageData: Data, maskData: Data, prompt: String) -> Data {
-        var body = Data()
-
-        // Add the image
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"image\"; filename=\"image.png\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
-        body.append(imageData)
-        body.append("\r\n".data(using: .utf8)!)
-
-        // Add the mask
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"mask\"; filename=\"mask.png\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
-        body.append(maskData)
-        body.append("\r\n".data(using: .utf8)!)
-
-        // Add the prompt
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"prompt\"\r\n\r\n".data(using: .utf8)!)
-        body.append("\(prompt)".data(using: .utf8)!)
-        body.append("\r\n".data(using: .utf8)!)
-
-        // Add the model
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
-        body.append("dall-e-2".data(using: .utf8)!)
-        body.append("\r\n".data(using: .utf8)!)
-
-        // Add the size
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"size\"\r\n\r\n".data(using: .utf8)!)
-        body.append("1024x1024".data(using: .utf8)!)
-        body.append("\r\n".data(using: .utf8)!)
-
-        // Add the response format
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
-        body.append("url".data(using: .utf8)!)
-        body.append("\r\n".data(using: .utf8)!)
-
-        // Add the boundary end marker
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
-        return body
-    }
+    // Removed createMultipartFormData as it's no longer needed
     
     private func fixOrientation(for image: UIImage) -> UIImage {
         guard image.imageOrientation != .up else {
