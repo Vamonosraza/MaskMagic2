@@ -12,6 +12,7 @@ struct ResultView: View {
     let generatedImage: UIImage
     @State private var showingOriginal = false
     @Environment(\.presentationMode) var presentationMode
+    @State private var showingShareSheet = false
     
     var body: some View {
         NavigationView {
@@ -62,7 +63,10 @@ struct ResultView: View {
                             .cornerRadius(10)
                         }
                         
-                        Button(action: shareImage) {
+                        Button(action: {
+                            showingShareSheet = true
+                        
+                        }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
                                 Text("Share")
@@ -73,6 +77,9 @@ struct ResultView: View {
                             .foregroundColor(.white)
                             .cornerRadius(10)
                         }
+                    }
+                    .sheet(isPresented: $showingShareSheet) {
+                        ShareSheet(activityItems: [generatedImage])
                     }
                     .padding(.horizontal, 40)
                     
@@ -109,12 +116,47 @@ struct ResultView: View {
     }
     
     func shareImage() {
-        guard let data = generatedImage.jpegData(compressionQuality: 0.8) else { return }
-        let av = UIActivityViewController(activityItems: [data], applicationActivities: nil)
+        // Share the actual UIImage instead of jpeg data
+        let imageToShare = generatedImage
         
+        let av = UIActivityViewController(activityItems: [imageToShare], applicationActivities: nil)
+        
+        // iPad support - prevent crashes on iPad
+        if let popoverController = av.popoverPresentationController {
+            // Anchor to the center of the screen
+            popoverController.sourceView = UIApplication.shared.windows.first?.rootViewController?.view
+            popoverController.sourceRect = CGRect(
+                x: UIScreen.main.bounds.midX,
+                y: UIScreen.main.bounds.midY,
+                width: 0,
+                height: 0
+            )
+            popoverController.permittedArrowDirections = []
+        }
+        
+        // Present the share sheet
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(av, animated: true, completion: nil)
+            rootViewController.present(av, animated: true)
+        } else {
+            print("Could not find root view controller to present share sheet")
         }
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]? = nil
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
+        // Nothing to do here
     }
 }

@@ -8,6 +8,7 @@
 import Foundation
 
 struct Logger {
+    // Logger for debugging and error handling that can be used throughout the app for consistent logging.
     enum Level: String {
         case debug = "DEBUG"
         case info = "INFO"

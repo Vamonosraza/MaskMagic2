@@ -119,7 +119,7 @@ class OpenAIService {
                         }
                     }
 
-                    // If we can't decode the specific error, throw a generic one
+                    // If specific error cant be decoded, throw a generic one
                     throw NSError(domain: "OpenAIService", code: httpResponse.statusCode, userInfo: [
                         NSLocalizedDescriptionKey: "API error with status code: \(httpResponse.statusCode)"
                     ])
@@ -149,8 +149,19 @@ class OpenAIService {
                     .tryMap { data -> UIImage in
                         print("📱 OpenAIService: Received image data of size: \(data.count) bytes")
                         if let image = UIImage(data: data) {
-                            print("📱 OpenAIService: Successfully created UIImage from data")
-                            return self.fixOrientation(for: image)
+                            print("📱 OpenAIService: Downloaded image orientation: \(self.describeOrientation(image.imageOrientation))")
+                            print("📱 OpenAIService: Downloaded image size: \(image.size.width)x\(image.size.height)")
+                            
+                            // Apply orientation fix
+                            let fixedImage = self.fixOrientation(for: image)
+                            
+                            // Verify if dimensions were swapped (another sign of rotation)
+                            if image.size.width != image.size.height &&
+                               (image.size.width == fixedImage.size.height || image.size.height == fixedImage.size.width) {
+                                print("⚠️ OpenAIService: WARNING - Image dimensions were swapped during orientation fix!")
+                            }
+                            
+                            return fixedImage
                         } else {
                             print("⚠️ OpenAIService: Failed to create UIImage from data")
                             throw NSError(domain: "OpenAIService", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Failed to create image from data"])
@@ -164,7 +175,10 @@ class OpenAIService {
     // Removed createMultipartFormData as it's no longer needed
     
     private func fixOrientation(for image: UIImage) -> UIImage {
+        UIImage.logImageDetails(image, label: "OpenAIService: BEFORE fix")
+        
         guard image.imageOrientation != .up else {
+            print("📱 OpenAIService: Image already in UP orientation, not fixing")
             return image // Already upright
         }
 
@@ -172,7 +186,8 @@ class OpenAIService {
         image.draw(in: CGRect(origin: .zero, size: image.size))
         let uprightImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-
+        
+        UIImage.logImageDetails(uprightImage, label: "OpenAIService: AFTER fix")
         return uprightImage ?? image
     }
     
@@ -188,6 +203,21 @@ class OpenAIService {
         }
         return nil
     }
+    
+    // Helper function to describe orientation in human-readable format
+    private func describeOrientation(_ orientation: UIImage.Orientation) -> String {
+        switch orientation {
+        case .up: return "UP (0°)"
+        case .down: return "DOWN (180°)"
+        case .left: return "LEFT (90° CCW)"
+        case .right: return "RIGHT (90° CW)"
+        case .upMirrored: return "UP MIRRORED"
+        case .downMirrored: return "DOWN MIRRORED"
+        case .leftMirrored: return "LEFT MIRRORED"
+        case .rightMirrored: return "RIGHT MIRRORED"
+        @unknown default: return "UNKNOWN"
+        }
+    }
 }
 
 // Response model for OpenAI API
@@ -199,3 +229,5 @@ struct OpenAIResponse: Decodable {
         let url: String?
     }
 }
+
+

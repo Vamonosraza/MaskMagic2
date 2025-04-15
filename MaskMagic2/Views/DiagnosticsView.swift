@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct DiagnosticsView: View {
+    // DiagnosticsView is a SwiftUI view that provides information about the device and app, and allows testing the OpenAI connection.
     @State private var logMessages: [String] = []
     @State private var isRefreshing = false
     

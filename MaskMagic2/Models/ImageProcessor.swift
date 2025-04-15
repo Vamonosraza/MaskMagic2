@@ -48,7 +48,7 @@ class ImageProcessor {
             }
             UIGraphicsEndImageContext()
             
-            // Check if we're still too large
+            // Check if its still too large
             if let resizedData = finalImage.pngData(), Double(resizedData.count) / (1024 * 1024) > 3.9 {
                 print("⚠️ ImageProcessor: Image is still too large after resizing")
                 return Fail(error: NSError(domain: "ImageProcessor", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Image is too large for the API (>4MB)"]))

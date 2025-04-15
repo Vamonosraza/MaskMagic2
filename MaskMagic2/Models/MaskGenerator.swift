@@ -10,7 +10,7 @@ import CoreImage
 
 class MaskGenerator {
     // Generate a mask with a transparent circle in the center
-    func generateCenterMask(for image: UIImage, centerPercentage: CGFloat = 0.5) -> UIImage? {
+    func generateCenterMask(for image: UIImage, centerPercentage: CGFloat = 0.7) -> UIImage? {
         print("📱 MaskGenerator: Generating circle mask for image size: \(image.size), centerPercentage: \(centerPercentage)")
         
         // CRITICAL: Use the exact same size as the input image
@@ -74,7 +74,7 @@ class MaskGenerator {
         // CRITICAL: Use the exact same size as the input image
         let size = image.size
         
-        // Ensure we have a valid size
+        // Ensure theres a valid size
         guard size.width > 0 && size.height > 0 else {
             print("⚠️ MaskGenerator: Invalid image size: \(size)")
             return nil
