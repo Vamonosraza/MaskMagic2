@@ -16,9 +16,9 @@ MaskMagic2 is an iOS application that uses AI to edit and transform images throu
 ## Screenshots
 
 <p align="center">
-  <img src="MaskMagic2/screenshots/HomePage.jpeg" width="200" alt="Home Screen">
-  <img src="MaskMagic2/screenshots/Edit.jpeg" width="200" alt="Masking Interface">
-  <img src="MaskMagic2/screenshots/GeneratedResult.jpeg" width="200" alt="Generated Result">
+  <img src="MaskMagic2/Screenshots/HomePage.jpeg" width="200" alt="Home Screen">
+  <img src="MaskMagic2/Screenshots/Edit.jpeg" width="200" alt="Masking Interface">
+  <img src="MaskMagic2/Screenshots/GeneratedResult.jpeg" width="200" alt="Generated Result">
 </p>
 
 ## Installation
