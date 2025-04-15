@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var isShowingImagePicker = false
     @State private var isShowingCamera = false
     @State private var navigateToEditView = false
+    @State private var showAboutView = false
     
     var body: some View {
         NavigationView {
@@ -69,11 +70,29 @@ struct ContentView: View {
                             .cornerRadius(10)
                             .shadow(radius: 5)
                         }
+                        Button(action: {
+                            showAboutView = true
+                        }) {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                Text("About")
+                            }
+                            .frame(minWidth: 0, maxWidth: .infinity)
+                            .padding()
+                            .background(Color(hex: Configuration.Colors.primary).opacity(0.8))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 20)
                     }
                     .padding(.horizontal, 40)
                     
                     Spacer()
                 }
+            }
+            .sheet(isPresented: $showAboutView) {
+                AboutView()
             }
             .sheet(isPresented: $isShowingImagePicker) {
                 ImagePicker(selectedImage: $selectedImage, sourceType: .photoLibrary) {
