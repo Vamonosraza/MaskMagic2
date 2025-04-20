@@ -7,5 +7,4 @@
 Pods/
 .env
 *.dSYM
-Configuration.swift
 
