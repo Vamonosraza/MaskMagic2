@@ -15,7 +15,7 @@ struct ContentView: View {
     @State private var showAboutView = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Color(hex: Configuration.Colors.primary)
                     .ignoresSafeArea()
